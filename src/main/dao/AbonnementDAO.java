@@ -110,5 +110,148 @@ public class AbonnementDAO {
         return abonnements;
     }
 
-    public boolean update
+    public boolean update(Abonnement abonnement){
+        String sql = "UPDATE abonnement SET nomService = ?, montantMensuel = ?, dateDebut = ?, dateFin = ?, statut = ?, typeAbonnement = ?, dureeEngagementMois = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+                pstmt.setString(1, abonnement.getNomService());
+                pstmt.setDouble(2, abonnement.getMontantMensuel());
+                pstmt.setDate(3, Date.valueOf(abonnement.getDateDebut()));
+
+                if (abonnement.getDateFin() != null) {
+                    pstmt.setDate(4, Date.valueOf(abonnement.getDateFin()));
+                } else {
+                    pstmt.setNull(4, Types.DATE);
+                }
+
+                pstmt.setString(5, abonnement.getStatut().name());
+
+                if (abonnement instanceof AbonnementAvecEngagement) {
+                    AbonnementAvecEngagement aae = (AbonnementAvecEngagement) abonnement;
+                    pstmt.setString(6, "AVEC_ENGAGEMENT");
+                    pstmt.setInt(7, aae.getDureeEngagementMois());
+                } else {
+                    pstmt.setString(6, "SANS_ENGAGEMENT");
+                    pstmt.setNull(7, Types.INTEGER);
+                }
+
+                pstmt.setString(8, abonnement.getId());
+
+                int affectedRows = pstmt.executeUpdate();
+                return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la mise a jour de l abonnement :");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean delete(String id){
+
+        String sql = "DELETE FROM abonnement WHERE id = ?";
+
+        try(Connection conn = DatabaseManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+                pstmt.setString(1, id);
+                int affectedRows = pstmt.executeUpdate();
+                return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la suppression de l abonnement :");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Abonnement> findAllActive(){
+        List<Abonnement> abonnements = new ArrayList<>();
+        String sql = "SELECT * FROM abonnement WHERE statut = ?";
+        try(Connection conn = DatabaseManager.getConnection();
+        PreparedStatement pstmt = conn .prepareStatement(sql)){
+            pstmt.setString(0, sql);
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                abonnements.add(mapResultSetToAbonnement(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la recuperation des abonnements actifs :");
+            e.printStackTrace();
+        }
+        return abonnements;
+        
+    }
+
+    public List<Abonnement> findAllExpiringBefore(LocalDate date){
+
+        List<Abonnement> abonnements = new ArrayList<>();
+
+        String sql = "SELECT * FROM Abonnement WHERE dateFin IS NOT NULL AND dateFin <= ?";
+
+        try(Connection conn = DatabaseManager.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setDate(1, Date.valueOf(date));
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()){
+                abonnements.add(mapResultSetToAbonnement(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la recuperation des abonnements expirant avant la date donnee :");
+            e.printStackTrace();
+        }
+        return abonnements;
+    }
+
+    public AbonnementStats getAbonnementStats(){
+
+        String sql = "SELECT typeAbonnement, COUNT(*) as count FROM Abonnement GROUP BY typeAbonnement";
+        int avecEngagement = 0;
+        int sansEngagement = 0;
+        
+        try(Connection conn = DatabaseManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()){
+                String type = rs.getString("typeAbonnement");
+                int count = rs.getInt("count");
+                if("AVEC_ENGAGEMENT".equals(type)){
+                    avecEngagement = count;
+                } else if ("SANS_ENGAGEMENT".equals(type)){
+                    sansEngagement = count;
+                }
+            }
+        } catch (SQLException e) {
+                System.err.println("Erreur lors de la recuperation des statistiques des abonnements :");
+                e.printStackTrace();
+        }
+        return new AbonnementStats(avecEngagement, sansEngagement);
+    }
+
+    public static class AbonnementStats {
+        private final int avecEngagement;
+        private final int sansEngagement;
+
+        public AbonnementStats(int avecEngagement, int sansEngagement) {
+            this.avecEngagement = avecEngagement;
+            this.sansEngagement = sansEngagement;
+        }
+
+        public int getAvecEngagement() {
+            return avecEngagement;
+        }
+
+        public int getSansEngagement() {
+            return sansEngagement;
+        }
+
+        public int getTotal() {
+            return avecEngagement + sansEngagement;
+        }
+    }
+
+    
 }
