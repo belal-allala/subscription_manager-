@@ -3,17 +3,23 @@ package main.entity;
 import java.time.LocalDate;
 
 public class AbonnementAvecEngagement extends Abonnement {
-    private int dureeEngagement; // en mois
+    private int dureeEngagementMois;
 
     public AbonnementAvecEngagement() {
         super();
     }
 
-    public AbonnementAvecEngagement(LocalDate dateDebut, LocalDate dateFin, double montant, int dureeEngagement) {
-        super(dateDebut, dateFin, montant);
-        this.dureeEngagement = dureeEngagement;
+    public AbonnementAvecEngagement(String id, String nomService, double montantMensuel, LocalDate dateDebut, LocalDate dateFin, StatutAbonnement statut, int dureeEngagementMois) {
+        super(id, nomService, dateDebut, dateFin, montantMensuel);
+        this.dureeEngagementMois = dureeEngagementMois;
     }
 
-    // Getters et Setters spécifiques
-    // TODO: Implement getters and setters
+    public int getDureeEngagementMois() {
+        return dureeEngagementMois;
+    }
+
+    public void setDureeEngagementMois(int dureeEngagementMois) {
+        this.dureeEngagementMois = dureeEngagementMois;
+    }
+
 }
