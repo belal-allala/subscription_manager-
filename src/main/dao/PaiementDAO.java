@@ -13,5 +13,4 @@ public class PaiementDAO {
         this.dbManager = new DatabaseManager();
     }
 
-    // TODO: Implement CRUD operations for Paiement
 }
