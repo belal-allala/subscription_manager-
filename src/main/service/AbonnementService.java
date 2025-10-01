@@ -19,23 +19,24 @@ public class AbonnementService {
 
     public Abonnement creerAbonnementAvecEngagement(String nomService, double montantMensuel, 
             LocalDate dateDebut, int dureeEngagementMois) {
-        // Validation des entrées
+
         if (montantMensuel <= 0) {
-            throw new IllegalArgumentException("Le montant mensuel doit être positif");
+            throw new IllegalArgumentException("Le montant mensuel doit etre positif");
         }
+
         if (dateDebut == null) {
-            throw new IllegalArgumentException("La date de début est obligatoire");
+            throw new IllegalArgumentException("La date de debut est obligatoire");
         }
+
         if (dureeEngagementMois <= 0) {
-            throw new IllegalArgumentException("La durée d'engagement doit être positive");
+            throw new IllegalArgumentException("La duree d engagement doit etre positive");
         }
 
         LocalDate dateFin = dateDebut.plusMonths(dureeEngagementMois);
         String id = IdGenerator.generateId();
         
         AbonnementAvecEngagement abonnement = new AbonnementAvecEngagement(
-            id, nomService, montantMensuel, dateDebut, dateFin, 
-            StatutAbonnement.ACTIF, dureeEngagementMois
+            id, nomService, montantMensuel, dateDebut, dateFin,  StatutAbonnement.ACTIF, dureeEngagementMois
         );
         
         abonnementDAO.create(abonnement);
@@ -44,17 +45,17 @@ public class AbonnementService {
 
     public Abonnement creerAbonnementSansEngagement(String nomService, double montantMensuel, 
             LocalDate dateDebut) {
-        // Validation des entrées
+
         if (montantMensuel <= 0) {
-            throw new IllegalArgumentException("Le montant mensuel doit être positif");
+            throw new IllegalArgumentException("Le montant mensuel doit etre positif");
         }
         if (dateDebut == null) {
-            throw new IllegalArgumentException("La date de début est obligatoire");
+            throw new IllegalArgumentException("La date de debut est obligatoire");
         }
 
         String id = IdGenerator.generateId();
         AbonnementSansEngagement abonnement = new AbonnementSansEngagement(
-            id, nomService, dateDebut, null, montantMensuel
+            id, nomService, dateDebut, null, montantMensuel, StatutAbonnement.ACTIF
         );
         
         abonnementDAO.create(abonnement);
@@ -64,19 +65,18 @@ public class AbonnementService {
     public void resilierAbonnement(String abonnementId, LocalDate dateResiliation) {
         Optional<Abonnement> optAbonnement = abonnementDAO.findById(abonnementId);
         if (!optAbonnement.isPresent()) {
-            throw new IllegalArgumentException("Abonnement non trouvé");
+            throw new IllegalArgumentException("Abonnement non trouve");
         }
 
         Abonnement abonnement = optAbonnement.get();
         
-        // Vérification des conditions de résiliation
         if (abonnement instanceof AbonnementAvecEngagement) {
             AbonnementAvecEngagement abonnementEngagement = (AbonnementAvecEngagement) abonnement;
             LocalDate dateFinEngagement = abonnement.getDateDebut()
                 .plusMonths(abonnementEngagement.getDureeEngagementMois());
             
             if (dateResiliation.isBefore(dateFinEngagement)) {
-                throw new IllegalStateException("Impossible de résilier avant la fin de la période d'engagement");
+                throw new IllegalStateException("Impossible de resilier avant la fin de la periode d engagement");
             }
         }
 
@@ -88,7 +88,7 @@ public class AbonnementService {
     public void suspendreAbonnement(String abonnementId) {
         Optional<Abonnement> optAbonnement = abonnementDAO.findById(abonnementId);
         if (!optAbonnement.isPresent()) {
-            throw new IllegalArgumentException("Abonnement non trouvé");
+            throw new IllegalArgumentException("Abonnement non trouve");
         }
 
         Abonnement abonnement = optAbonnement.get();
@@ -104,7 +104,7 @@ public class AbonnementService {
 
         Abonnement abonnement = optAbonnement.get();
         if (abonnement.getStatut() != StatutAbonnement.SUSPENDU) {
-            throw new IllegalStateException("L'abonnement n'est pas suspendu");
+            throw new IllegalStateException("L abonnement n est pas suspendu");
         }
         
         abonnement.setStatut(StatutAbonnement.ACTIF);
@@ -112,15 +112,18 @@ public class AbonnementService {
     }
 
     public List<Abonnement> listerAbonnementsActifs() {
-        return abonnementDAO.findAll().stream()
-            .filter(a -> a.getStatut() == StatutAbonnement.ACTIF)
-            .collect(Collectors.toList());
+        return abonnementDAO.findAllActive().stream()
+                .collect(Collectors.toList());
+    }
+
+    public List<Abonnement> listerTousAbonnements() {
+        return abonnementDAO.findAll();
     }
 
     public List<Abonnement> listerAbonnementsExpires() {
-        LocalDate aujourd'hui = LocalDate.now();
+        LocalDate dateActuelle = LocalDate.now();
         return abonnementDAO.findAll().stream()
-            .filter(a -> a.getDateFin() != null && a.getDateFin().isBefore(aujourd'hui))
+            .filter(a -> a.getDateFin() != null && a.getDateFin().isBefore(dateActuelle))
             .collect(Collectors.toList());
     }
 
@@ -133,7 +136,7 @@ public class AbonnementService {
     public long calculerDureeAbonnement(String abonnementId) {
         Optional<Abonnement> optAbonnement = abonnementDAO.findById(abonnementId);
         if (!optAbonnement.isPresent()) {
-            throw new IllegalArgumentException("Abonnement non trouvé");
+            throw new IllegalArgumentException("Abonnement non trouve");
         }
 
         Abonnement abonnement = optAbonnement.get();
@@ -142,3 +145,17 @@ public class AbonnementService {
             
         return ChronoUnit.MONTHS.between(abonnement.getDateDebut(), fin);
     }
+
+    public boolean modifierAbonnement(Abonnement abonnement) {
+        if (abonnement == null) {
+            throw new IllegalArgumentException("L'abonnement ne peut pas etre null");
+        }
+        
+        if (abonnement.getMontantMensuel() <= 0) {
+            throw new IllegalArgumentException("Le montant mensuel doit etre positif");
+        }
+        
+        return abonnementDAO.update(abonnement);
+    }
+
+}

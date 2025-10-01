@@ -51,7 +51,7 @@ public class PaiementDAO {
             if(rs.next()){
                 return Optional.of(mapResultSetToPaiement(rs));
             }
-        } Catch (SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Erreur lors de la recherche du paiement par ID :");
             e.printStackTrace();
         }

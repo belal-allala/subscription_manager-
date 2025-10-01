@@ -4,5 +4,6 @@ public enum StatutAbonnement {
     ACTIF,
     SUSPENDU,
     RESILIE,
-    EXPIRE
+    EXPIRE,
+    ACTIVE
 }

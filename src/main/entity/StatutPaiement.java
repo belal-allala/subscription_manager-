@@ -4,5 +4,7 @@ public enum StatutPaiement {
     EN_ATTENTE,
     VALIDE,
     REJETE,
-    REMBOURSE
+    REMBOURSE,
+    NON_PAYE,
+    PAYE
 }

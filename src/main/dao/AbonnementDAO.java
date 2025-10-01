@@ -52,9 +52,8 @@ public class AbonnementDAO {
 
     }
 
-    public Optional<Abonnement> findById(String id){
-
-        String sql="SELECTL * FROM abonnement WHERE id = ?";
+    public Optional<Abonnement> findById(String id) {
+        String sql = "SELECT * FROM abonnement WHERE id = ?";
 
         try(Connection conn = DatabaseManager.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)){
@@ -88,7 +87,7 @@ public class AbonnementDAO {
             int dureeEngagementMois = rs.getInt("dureeEngagementMois");
             return new AbonnementAvecEngagement(id, nomService, montantMensuel, dateDebut, dateFin != null ? dateFin.toLocalDate() : null, statut, dureeEngagementMois);
         } else {
-            return new AbonnementSansEngagement(id, nomService, dateDebut, dateFin != null ? dateFin.toLocalDate() : null, montantMensuel);
+            return new AbonnementSansEngagement(id, nomService, dateDebut, dateFin != null ? dateFin.toLocalDate() : null, montantMensuel, statut);
         }
     }
 
@@ -168,7 +167,7 @@ public class AbonnementDAO {
         String sql = "SELECT * FROM abonnement WHERE statut = ?";
         try(Connection conn = DatabaseManager.getConnection();
         PreparedStatement pstmt = conn .prepareStatement(sql)){
-            pstmt.setString(0, sql);
+            pstmt.setString(1,"ACTIF" );
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()){
                 abonnements.add(mapResultSetToAbonnement(rs));
@@ -181,28 +180,6 @@ public class AbonnementDAO {
         
     }
 
-    public List<Abonnement> findAllExpiringBefore(LocalDate date){
-
-        List<Abonnement> abonnements = new ArrayList<>();
-
-        String sql = "SELECT * FROM Abonnement WHERE dateFin IS NOT NULL AND dateFin <= ?";
-
-        try(Connection conn = DatabaseManager.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(sql)){
-
-            pstmt.setDate(1, Date.valueOf(date));
-            ResultSet rs = pstmt.executeQuery();
-
-            while(rs.next()){
-                abonnements.add(mapResultSetToAbonnement(rs));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la recuperation des abonnements expirant avant la date donnee :");
-            e.printStackTrace();
-        }
-        return abonnements;
-    }
 
     public AbonnementStats getAbonnementStats(){
 

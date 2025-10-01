@@ -10,7 +10,7 @@ public class AbonnementAvecEngagement extends Abonnement {
     }
 
     public AbonnementAvecEngagement(String id, String nomService, double montantMensuel, LocalDate dateDebut, LocalDate dateFin, StatutAbonnement statut, int dureeEngagementMois) {
-        super(id, nomService, dateDebut, dateFin, montantMensuel);
+        super(id, nomService, dateDebut, dateFin, montantMensuel, statut);
         this.dureeEngagementMois = dureeEngagementMois;
     }
 

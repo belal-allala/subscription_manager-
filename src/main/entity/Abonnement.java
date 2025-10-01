@@ -12,13 +12,13 @@ public abstract class Abonnement {
 
     public Abonnement() {}
 
-    public Abonnement(String id, String nomService, LocalDate dateDebut, LocalDate dateFin, double montantMensuel) {
+    public Abonnement(String id, String nomService, LocalDate dateDebut, LocalDate dateFin, double montantMensuel, StatutAbonnement statut) {
         this.id = id;
         this.nomService = nomService;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.montantMensuel = montantMensuel;
-        this.statut = StatutAbonnement.ACTIF;
+        this.statut = statut;
     }
 
     public String getId() {

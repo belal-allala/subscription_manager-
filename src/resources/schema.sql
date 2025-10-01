@@ -1,25 +1,32 @@
--- Création de la base de données
-CREATE DATABASE IF NOT EXISTS subscription_manager;
-USE subscription_manager;
+-- Création des types ENUM
+CREATE TYPE statut_abonnement AS ENUM ('ACTIF', 'SUSPENDU', 'RESILIE');
+CREATE TYPE type_abonnement AS ENUM ('AVEC_ENGAGEMENT', 'SANS_ENGAGEMENT');
+CREATE TYPE statut_paiement AS ENUM ('EN_ATTENTE', 'VALIDE', 'REJETE');
 
 -- Table des abonnements
-CREATE TABLE IF NOT EXISTS abonnements (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS abonnement (
+    id VARCHAR(36) PRIMARY KEY,
+    nom_service VARCHAR(100) NOT NULL,
+    montant_mensuel DECIMAL(10,2) NOT NULL,
     date_debut DATE NOT NULL,
-    date_fin DATE NOT NULL,
-    montant DECIMAL(10,2) NOT NULL,
-    statut ENUM('ACTIF', 'SUSPENDU', 'RESILIE', 'EXPIRE') NOT NULL,
-    type ENUM('AVEC_ENGAGEMENT', 'SANS_ENGAGEMENT') NOT NULL,
-    duree_engagement INT,
-    frais_resiliation DECIMAL(10,2)
+    date_fin DATE,
+    statut statut_abonnement NOT NULL DEFAULT 'ACTIF',
+    type type_abonnement NOT NULL,
+    duree_engagement INTEGER
 );
 
 -- Table des paiements
-CREATE TABLE IF NOT EXISTS paiements (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    abonnement_id INT NOT NULL,
-    montant DECIMAL(10,2) NOT NULL,
-    date_paiement DATE NOT NULL,
-    statut ENUM('EN_ATTENTE', 'VALIDE', 'REJETE', 'REMBOURSE') NOT NULL,
-    FOREIGN KEY (abonnement_id) REFERENCES abonnements(id)
+CREATE TABLE IF NOT EXISTS paiement (
+    id_paiement VARCHAR(36) PRIMARY KEY,
+    id_abonnement VARCHAR(36) NOT NULL,
+    date_echeance DATE NOT NULL,
+    date_paiement DATE,
+    type_paiement VARCHAR(50),
+    statut statut_paiement NOT NULL DEFAULT 'EN_ATTENTE',
+    FOREIGN KEY (id_abonnement) REFERENCES abonnement(id)
 );
+
+-- Index pour améliorer les performances des requêtes fréquentes
+CREATE INDEX idx_abonnement_statut ON abonnement(statut);
+CREATE INDEX idx_paiement_date_echeance ON paiement(date_echeance);
+CREATE INDEX idx_paiement_statut ON paiement(statut);

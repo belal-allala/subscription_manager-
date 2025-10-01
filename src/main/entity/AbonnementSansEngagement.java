@@ -8,7 +8,7 @@ public class AbonnementSansEngagement extends Abonnement {
         super();
     }
 
-    public AbonnementSansEngagement(String id, String nomService, LocalDate dateDebut, LocalDate dateFin, double montant) {
-        super(id, nomService, dateDebut, dateFin, montant);
+    public AbonnementSansEngagement(String id, String nomService, LocalDate dateDebut, LocalDate dateFin, double montant,StatutAbonnement statut) {
+        super(id, nomService, dateDebut, dateFin, montant,statut);
     }
 }
